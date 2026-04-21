@@ -1,0 +1,5 @@
+admin link
+http://localhost:5173/admin/products
+
+weblink
+http://localhost:5173
