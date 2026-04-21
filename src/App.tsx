@@ -1,4 +1,4 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Redirect, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -27,26 +27,29 @@ const queryClient = new QueryClient();
 function Router() {
   return (
     <Switch>
+      {/* USER */}
       <Route path="/" component={Home} />
       <Route path="/cart" component={Cart} />
       <Route path="/checkout" component={Checkout} />
       <Route path="/login" component={Login} />
       <Route path="/orders" component={Orders} />
-      
 
-      {/* ✅ ADMIN (مفصول بالكامل) */}
-<Route path="/admin/login" component={AdminLogin} />
-<Route path="/admin/dashboard" component={AdminDashboard} />
-<Route path="/admin/orders" component={AdminOrders} />
-<Route path="/admin/products" component={AdminProducts} />
-<Route path="/admin/revenue/daily" component={AdminRevenueDaily} />
-<Route path="/admin/revenue/monthly" component={AdminRevenueMonthly} />
-<Route path="/admin/settings" component={AdminSettings} />
-<Route path="/admin/sessions" component={AdminSessions} />
+      {/* ADMIN */}
+      <Route path="/admin/login" component={AdminLogin} />
+      <Route path="/admin/dashboard" component={AdminDashboard} />
+      <Route path="/admin/orders" component={AdminOrders} />
+      <Route path="/admin/products" component={AdminProducts} />
+      <Route path="/admin/revenue/daily" component={AdminRevenueDaily} />
+      <Route path="/admin/revenue/monthly" component={AdminRevenueMonthly} />
+      <Route path="/admin/settings" component={AdminSettings} />
+      <Route path="/admin/sessions" component={AdminSessions} />
 
+      {/* 🔥 حل المشكلة */}
+      <Route path="/admin">
+        <Redirect to="/admin/dashboard" />
+      </Route>
 
-<Route path="/admin" component={AdminLogin} />
-
+      {/* NOT FOUND */}
       <Route component={NotFound} />
     </Switch>
   );
@@ -59,12 +62,13 @@ function App() {
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-             <ScrollToTop />
+              <ScrollToTop />
               <Router />
             </WouterRouter>
-           <div className="pointer-events-none">
-  <Toaster />
-</div>
+
+            <div className="pointer-events-none">
+              <Toaster />
+            </div>
           </TooltipProvider>
         </QueryClientProvider>
       </AuthProvider>
