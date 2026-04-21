@@ -1,17 +1,20 @@
-import { Switch, Route, Redirect, Router as WouterRouter } from "wouter";
+import { useEffect } from "react";
+import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/not-found";
 
-import { LanguageProvider } from "@/i18n";
-import { AuthProvider } from "@/lib/auth-context";
+import { Toaster } from "./components/ui/toaster";
+import { TooltipProvider } from "./components/ui/tooltip";
+import NotFound from "./pages/not-found";
+
+import { LanguageProvider } from "./i18n";
+import { AuthProvider } from "./lib/auth-context";
 
 import Home from "./pages/Home";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Login from "./pages/Login";
 import Orders from "./pages/Orders";
+
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminOrders from "./pages/admin/Orders";
@@ -20,9 +23,22 @@ import AdminRevenueDaily from "./pages/admin/RevenueDaily";
 import AdminRevenueMonthly from "./pages/admin/RevenueMonthly";
 import AdminSettings from "./pages/admin/Settings";
 import AdminSessions from "./pages/admin/Sessions";
-import ScrollToTop from "@/components/ScrollToTop";
+
+import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
+
+
+// 🔥 redirect بدون مشاكل
+function AdminRedirect() {
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    setLocation("/admin/dashboard");
+  }, [setLocation]);
+
+  return null;
+}
 
 function Router() {
   return (
@@ -44,12 +60,10 @@ function Router() {
       <Route path="/admin/settings" component={AdminSettings} />
       <Route path="/admin/sessions" component={AdminSessions} />
 
-      {/* 🔥 حل المشكلة */}
-      <Route path="/admin">
-        <Redirect to="/admin/dashboard" />
-      </Route>
+      {/* redirect */}
+      <Route path="/admin" component={AdminRedirect} />
 
-      {/* NOT FOUND */}
+      {/* fallback */}
       <Route component={NotFound} />
     </Switch>
   );
