@@ -1,9 +1,5 @@
 {
-  "installCommand": "echo skip",
-  "buildCommand": "echo done",
-  "outputDirectory": "dist/public",
-  "routes": [
-    { "handle": "filesystem" },
-    { "src": "/.*", "dest": "/index.html" }
-  ]
+  "buildCommand": "pnpm build",
+  "installCommand": "pnpm install",
+  "outputDirectory": "dist"
 }
