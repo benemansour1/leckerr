@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 23 45% 7%;
+  --foreground: 43 66% 94%;
+  
+  --card: 23 44% 12%;
+  --card-foreground: 43 66% 94%;
+  
+  --popover: 23 44% 12%;
+  --popover-foreground: 43 66% 94%;
+  
+  --primary: 46 65% 52%;
+  --primary-foreground: 23 45% 7%;
+  
+  --secondary: 25 35% 20%;
+  --secondary-foreground: 46 65% 52%;
+  
+  --muted: 25 35% 15%;
+  --muted-foreground: 30 20% 70%;
+  
+  --accent: 15 70% 50%;
+  --accent-foreground: 43 66% 94%;
+  
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 43 66% 94%;
+
+  --border: 25 35% 25%;
+  --input: 25 35% 20%;
+  --ring: 46 65% 52%;
+
+  --radius: 1rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html, body {
+    direction: rtl;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased min-h-screen;
+    font-family: 'Tajawal', sans-serif;
+
+    background-image: radial-gradient(circle at top right, rgba(212, 175, 55, 0.05), transparent 40%),
+                      radial-gradient(circle at bottom left, rgba(212, 175, 55, 0.03), transparent 40%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold;
+  }
+
+  * {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .price, [class*="price"], span, p, div, td, th {
+    -webkit-locale: "en";
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-background;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-secondary rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary;
+}
+
+.glass-panel {
+  @apply bg-card/60 backdrop-blur-xl border border-border/50 shadow-2xl shadow-black/40;
+}
+
+.text-gold-gradient {
+  @apply bg-gradient-to-r from-yellow-200 via-yellow-400 to-amber-500 bg-clip-text text-transparent;
+}
