@@ -19,26 +19,6 @@ export default function AdminDashboard() {
   });
   const { t } = useLang();
 
-  useEffect(() => {
-  const messaging = getMessaging();
-
-  Notification.requestPermission().then((permission) => {
-    if (permission === "granted") {
-      getToken(messaging, {
-        vapidKey: "BPNI8-U9eQCXSgH6TDLqfmGXvPc2ctLJYkem7Z3tUvfx_6oBystcKIUAZykJoSiSc1yxjOdsEOkwYTCuH5hYyr4",
-      }).then(async (token) => {
-        if (token) {
-          console.log("ADMIN TOKEN:", token);
-
-          await setDoc(doc(db, "adminTokens", token), {
-            token,
-            createdAt: new Date(),
-          });
-        }
-      });
-    }
-  });
-}, []);
 
   const STAT_CARDS = [
     { title: t.admin.todayRevenue, value: formatPrice(stats?.todayRevenue || 0), icon: DollarSign, color: 'text-primary', bg: 'bg-primary/10' },
