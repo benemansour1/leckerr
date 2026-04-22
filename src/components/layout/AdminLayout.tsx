@@ -50,10 +50,6 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-if (!user || !isAdmin) {
-  setLocation("/admin/login");
-  return null;
-}
 
   const navItems = [
     { name: t.admin.dashboard, href: "/admin/dashboard", icon: LayoutDashboard },

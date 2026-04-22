@@ -27,7 +27,7 @@ export default function AdminLogin() {
       toast({ title: "تم الدخول", description: "مرحباً بك في لوحة التحكم" });
 
       // redirect
-      window.location.href = '/admin/dashboard';
+      setLocation("/admin/dashboard");
 
     } else {
       toast({ title: "خطأ", description: "كلمة المرور غير صحيحة", variant: "destructive" });
