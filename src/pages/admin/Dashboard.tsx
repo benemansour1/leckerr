@@ -24,9 +24,7 @@ export default function AdminDashboard() {
   const setupNotifications = async () => {
 
     try {
-if (Notification.permission === 'default') {
-  await Notification.requestPermission();
-}
+
 
       if (Notification.permission !== 'granted') return;
 

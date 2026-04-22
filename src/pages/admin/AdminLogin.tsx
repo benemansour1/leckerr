@@ -45,17 +45,29 @@ export default function AdminLogin() {
           phone: 'admin',
         } as any);
 
+        
+
         toast({
           title: 'تم الدخول',
           description:
             'مرحباً بك في لوحة التحكم',
         });
 
+        if (
+  Notification.permission ===
+  'default'
+) {
+
+  await Notification.requestPermission();
+}
+
         setLocation(
           '/admin/dashboard'
         );
 
       } else {
+
+        
 
         toast({
           title: 'خطأ',

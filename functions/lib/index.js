@@ -44,7 +44,9 @@ exports.sendNewOrderNotification = (0, firestore_1.onDocumentCreated)("orders/{o
         .firestore()
         .collection("adminTokens")
         .get();
-    const tokens = tokensSnapshot.docs.map((doc) => doc.id);
+    const tokens = tokensSnapshot.docs
+        .map((doc) => doc.data().token)
+        .filter(Boolean);
     if (!tokens.length) {
         console.log("No admin tokens found");
         return;

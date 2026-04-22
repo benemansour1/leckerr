@@ -13,7 +13,9 @@ export const sendNewOrderNotification = onDocumentCreated(
       .collection("adminTokens")
       .get();
 
-    const tokens = tokensSnapshot.docs.map((doc) => doc.id);
+    const tokens = tokensSnapshot.docs
+  .map((doc) => doc.data().token)
+  .filter(Boolean);
 
     if (!tokens.length) {
       console.log("No admin tokens found");

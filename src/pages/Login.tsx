@@ -14,42 +14,98 @@ import {
 import { auth } from '@/lib/firebase';
 
 export default function Login() {
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
-  const [step, setStep] = useState<'phone' | 'otp'>('phone');
 
-  const [loadingPhone, setLoadingPhone] = useState(false);
-  const [loadingOtp, setLoadingOtp] = useState(false);
+  const [phone, setPhone] =
+    useState('');
 
-  const [confirmationResult, setConfirmationResult] =
-    useState<ConfirmationResult | null>(null);
+  const [otp, setOtp] =
+    useState('');
+
+  const [step, setStep] =
+    useState<'phone' | 'otp'>(
+      'phone'
+    );
+
+  const [loadingPhone,
+    setLoadingPhone] =
+    useState(false);
+
+  const [loadingOtp,
+    setLoadingOtp] =
+    useState(false);
+
+  const [
+    confirmationResult,
+    setConfirmationResult,
+  ] = useState<
+    ConfirmationResult | null
+  >(null);
 
   const { t } = useLang();
-  const { login, user } = useAuth();
+
+  const {
+    login,
+    user,
+  } = useAuth();
 
   React.useEffect(() => {
+
     if (user) {
-      if (user.role === 'admin') {
-        window.location.href = '/admin/dashboard';
+
+      if (
+        user.role === 'admin'
+      ) {
+
+        window.location.href =
+          '/admin/dashboard';
+
       } else {
-        window.location.href = '/';
+
+        window.location.href =
+          '/';
       }
     }
+
   }, [user]);
 
-  const setupRecaptcha = () => {
-    if ((window as any).recaptchaVerifier) return;
+  const setupRecaptcha =
+    async () => {
 
-    (window as any).recaptchaVerifier = new RecaptchaVerifier(
-      auth,
-      'recaptcha-container',
-      {
-        size: 'invisible',
-      }
-    );
+    if (
+      (window as any)
+        .recaptchaVerifier
+    ) {
+
+      return;
+    }
+
+ (window as any)
+  .recaptchaVerifier =
+  new RecaptchaVerifier(
+    auth,
+    'recaptcha-container',
+    {
+      size: 'normal',
+
+      callback: () => {
+        console.log(
+          'recaptcha solved'
+        );
+      },
+    }
+  );
+
+    await (
+      window as any
+    ).recaptchaVerifier
+      .render();
   };
 
-  const handleSendOtp = async (e: React.FormEvent) => {
+  const handleSendOtp =
+    async (
+      e: React.FormEvent
+    ) => {
+
     e.preventDefault();
 
     if (!phone) return;
@@ -57,94 +113,215 @@ export default function Login() {
     setLoadingPhone(true);
 
     try {
-      setupRecaptcha();
 
-      const appVerifier = (window as any).recaptchaVerifier;
+      await setupRecaptcha();
 
-      const formattedPhone = phone.startsWith('+')
-        ? phone
-        : `+972${phone.substring(1)}`;
+      const appVerifier =
+        (window as any)
+          .recaptchaVerifier;
 
-      const result = await signInWithPhoneNumber(
-        auth,
-        formattedPhone,
-        appVerifier
+      let formattedPhone =
+        phone.replace(
+          /\s/g,
+          ''
+        );
+
+      if (
+        formattedPhone.startsWith(
+          '059'
+        ) ||
+
+        formattedPhone.startsWith(
+          '056'
+        )
+      ) {
+
+        formattedPhone =
+          '+970' +
+          formattedPhone.substring(
+            1
+          );
+
+      } else if (
+        formattedPhone.startsWith(
+          '05'
+        )
+      ) {
+
+        formattedPhone =
+          '+972' +
+          formattedPhone.substring(
+            1
+          );
+
+      } else if (
+        !formattedPhone.startsWith(
+          '+'
+        )
+      ) {
+
+        toast({
+          title: t.error,
+
+          description:
+            'رقم الهاتف غير صحيح',
+
+          variant:
+            'destructive',
+        });
+
+        setLoadingPhone(
+          false
+        );
+
+        return;
+      }
+
+      const result =
+        await signInWithPhoneNumber(
+          auth,
+          formattedPhone,
+          appVerifier
+        );
+
+      setConfirmationResult(
+        result
       );
-
-      setConfirmationResult(result);
 
       setStep('otp');
 
       toast({
-        title: t.login.codeSent,
-        description: 'تم إرسال رمز التحقق إلى هاتفك',
+        title:
+          t.login.codeSent,
+
+        description:
+          'تم إرسال رمز التحقق إلى هاتفك',
       });
+
     } catch (err: any) {
+
+      console.error(err);
+
       toast({
         title: t.error,
-        description: err.message || t.login.sendError,
-        variant: 'destructive',
+
+        description:
+          err?.code ||
+          err?.message ||
+          t.login.sendError,
+
+        variant:
+          'destructive',
       });
+
     } finally {
-      setLoadingPhone(false);
+
+      setLoadingPhone(
+        false
+      );
     }
   };
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
+  const handleVerifyOtp =
+    async (
+      e: React.FormEvent
+    ) => {
+
     e.preventDefault();
 
-    if (!otp || !confirmationResult) return;
+    if (
+      !otp ||
+      !confirmationResult
+    ) {
+
+      return;
+    }
 
     setLoadingOtp(true);
 
     try {
-      await confirmationResult.confirm(otp);
+
+      await confirmationResult
+        .confirm(otp);
 
       const adminNumbers = [
         '05XXXXXXXX',
       ];
 
-      const isAdmin = adminNumbers.includes(phone);
+      const isAdmin =
+        adminNumbers.includes(
+          phone
+        );
 
-login({
-  uid: phone,
-  phone,
-  role: isAdmin ? 'admin' : 'customer',
-} as any);
+      login({
+        uid: phone,
+        phone,
+
+        role: isAdmin
+          ? 'admin'
+          : 'customer',
+      } as any);
 
       if (isAdmin) {
-        window.location.href = '/admin/dashboard';
+
+        window.location.href =
+          '/admin/dashboard';
+
       } else {
-        window.location.href = '/';
+
+        window.location.href =
+          '/';
       }
+
     } catch {
+
       toast({
         title: t.error,
-        description: t.login.invalidCode,
-        variant: 'destructive',
+
+        description:
+          t.login.invalidCode,
+
+        variant:
+          'destructive',
       });
+
     } finally {
+
       setLoadingOtp(false);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
+
       <div className="absolute inset-0 z-0">
+
         <img
           src={`${import.meta.env.BASE_URL}images/hero-bg.png`}
           alt="Background"
           className="w-full h-full object-cover opacity-20 blur-sm"
         />
+
       </div>
 
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
+        initial={{
+          opacity: 0,
+          scale: 0.95,
+        }}
+
+        animate={{
+          opacity: 1,
+          scale: 1,
+        }}
+
         className="z-10 w-full max-w-md"
       >
+
         <Card className="p-8 sm:p-10 backdrop-blur-xl bg-card/80 border-primary/20 shadow-2xl shadow-primary/10">
+
           <div className="text-center mb-8">
+
             <img
               src={`${import.meta.env.BASE_URL}images/lecker-logo.png`}
               alt="Lecker"
@@ -158,32 +335,72 @@ login({
             <p className="text-muted-foreground mt-2">
               {t.login.subtitle}
             </p>
+
           </div>
 
           {step === 'phone' ? (
-            <form onSubmit={handleSendOtp} className="space-y-6">
+
+            <form
+              onSubmit={
+                handleSendOtp
+              }
+
+              className="space-y-6"
+            >
+
               <Input
-                label={t.login.phone}
+                label={
+                  t.login.phone
+                }
+
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+
+                onChange={(e) =>
+                  setPhone(
+                    e.target.value
+                  )
+                }
+
                 placeholder="05XXXXXXXX"
+
                 dir="ltr"
+
                 className="text-center text-lg tracking-widest font-mono"
+
                 required
               />
 
               <Button
                 type="submit"
+
                 className="w-full text-lg py-4"
-                isLoading={loadingPhone}
+
+                isLoading={
+                  loadingPhone
+                }
               >
-                {t.login.continue}
+                {
+                  t.login.continue
+                }
               </Button>
+
             </form>
+
           ) : (
-            <form onSubmit={handleVerifyOtp} className="space-y-6">
+
+            <form
+              onSubmit={
+                handleVerifyOtp
+              }
+
+              className="space-y-6"
+            >
+
               <div className="text-center mb-4 text-sm text-muted-foreground">
-                {t.login.enterCode}
+
+                {
+                  t.login.enterCode
+                }
 
                 <span
                   className="font-bold text-foreground"
@@ -194,35 +411,68 @@ login({
 
                 <button
                   type="button"
-                  onClick={() => setStep('phone')}
+
+                  onClick={() =>
+                    setStep(
+                      'phone'
+                    )
+                  }
+
                   className="block mx-auto mt-2 text-primary hover:underline"
                 >
-                  {t.login.editNumber}
+                  {
+                    t.login.editNumber
+                  }
                 </button>
+
               </div>
 
               <Input
-                label={t.login.otpLabel}
+                label={
+                  t.login.otpLabel
+                }
+
                 value={otp}
-                onChange={(e) => setOtp(e.target.value)}
+
+                onChange={(e) =>
+                  setOtp(
+                    e.target.value
+                  )
+                }
+
                 placeholder="------"
+
                 dir="ltr"
+
                 maxLength={6}
+
                 className="text-center text-2xl tracking-[1em] font-mono font-bold"
+
                 required
               />
 
               <Button
                 type="submit"
+
                 className="w-full text-lg py-4"
-                isLoading={loadingOtp}
+
+                isLoading={
+                  loadingOtp
+                }
               >
-                {t.login.confirmLogin}
+                {
+                  t.login.confirmLogin
+                }
               </Button>
+
             </form>
           )}
 
-          <div id="recaptcha-container"></div>
+          <div
+            id="recaptcha-container"
+            className="flex justify-center mt-4"
+          ></div>
+
         </Card>
       </motion.div>
     </div>

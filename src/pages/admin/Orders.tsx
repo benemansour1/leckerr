@@ -58,19 +58,21 @@ const PAYMENT_LABELS = {
   },
 };
 
+const orderAudio = new Audio(
+  '/notification.mp3'
+);
+
+orderAudio.preload = 'auto';
+
 function playOrderSound() {
 
   try {
 
-    const audio = new Audio(
-      '/notification.mp3'
-    );
+    orderAudio.pause();
 
-    audio.volume = 1;
+    orderAudio.currentTime = 0;
 
-    audio.currentTime = 0;
-
-    audio.play()
+    orderAudio.play()
       .then(() => {
         console.log('sound played');
       })
@@ -86,7 +88,6 @@ function playOrderSound() {
     console.error(err);
   }
 }
-
 
 
 export default function AdminOrders() {
