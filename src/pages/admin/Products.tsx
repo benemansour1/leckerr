@@ -250,7 +250,11 @@ const language =
   ? 'מחיר (₪)'
   : 'السعر (شيكل)'}type="number" step="0.01" {...register('price')} required />
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-muted-foreground ms-1">التصنيف</label>
+              <label className="text-sm font-medium text-muted-foreground ms-1">
+  {language === 'he'
+    ? 'קטגוריה'
+    : 'التصنيف'}
+</label>
               <select {...register('category')} className="bg-input/50 border-2 border-border rounded-xl px-4 py-3 text-foreground focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none">
                 {CATEGORIES.map((c) => (
   <option
@@ -268,9 +272,25 @@ const language =
           <Input label={language === 'he'
   ? 'תיאור'
   : 'الوصف'}{...register('description')} />
-          <Input label="{language === 'he' ? 'קישור תמונה' : 'رابط الصورة (URL)'}" {...register('imageUrl')} dir="ltr" />
+          <Input
+  label={
+    language === 'he'
+      ? 'קישור תמונה'
+      : 'رابط الصورة (URL)'
+  }
+  {...register('imageUrl')}
+  dir="ltr"
+/>
           <div className="grid grid-cols-2 gap-4">
-            <Input label="{language === 'he' ? 'סדר תצוגה' : 'ترتيب العرض'}" type="number" {...register('sortOrder')} />
+            <Input
+  label={
+    language === 'he'
+      ? 'סדר תצוגה'
+      : 'ترتيب العرض'
+  }
+  type="number"
+  {...register('sortOrder')}
+/>
             <label className="flex items-center gap-3 mt-8 cursor-pointer">
               <input type="checkbox" {...register('isActive')} className="w-5 h-5 accent-primary" />
               <span>{language === 'he'

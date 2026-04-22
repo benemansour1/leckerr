@@ -44,18 +44,47 @@ const STATUS_OPTIONS = [
   },
 ];
 
-const PAYMENT_LABELS: Record<string, string> = {
-  cash: '💵 كاش / عند الاستلام',
-  card: '💳 بطاقة ائتمانية',
-  online: '📱 دفع إلكتروني',
+const PAYMENT_LABELS = {
+  ar: {
+    cash: '💵 كاش / عند الاستلام',
+    card: '💳 بطاقة ائتمانية',
+    online: '📱 دفع إلكتروني',
+  },
+
+  he: {
+    cash: '💵 מזומן',
+    card: '💳 אשראי',
+    online: '📱 תשלום דיגיטלי',
+  },
 };
 
 function playOrderSound() {
+
   try {
-    const audio = new Audio("/notification.mp3");
+
+    const audio = new Audio(
+      '/notification.mp3'
+    );
+
     audio.volume = 1;
-    audio.play().catch(() => {});
-  } catch {}
+
+    audio.currentTime = 0;
+
+    audio.play()
+      .then(() => {
+        console.log('sound played');
+      })
+      .catch((err) => {
+        console.error(
+          'sound error',
+          err
+        );
+      });
+
+  } catch (err) {
+
+    console.error(err);
+  }
 }
 
 
@@ -66,7 +95,7 @@ export default function AdminOrders() {
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const prevCountRef = useRef<number | null>(null);
-  const soundEnabledRef = useRef(false);
+  const soundEnabledRef = useRef(true);
   const { t } = useLang();
 
 const language =
@@ -90,10 +119,18 @@ const language =
     const unsubscribe = subscribeToOrders((newOrders) => {
       const newCount = newOrders.filter(o => o.status === 'new').length;
       if (prevCountRef.current !== null && newCount > prevCountRef.current) {
+        console.log('playing order sound');
         if (soundEnabledRef.current) playOrderSound();
         toast({
-          title: '🔔 طلب جديد وصل!',
-          description: `لديك ${newCount} طلبات جديدة بانتظار المعالجة`,
+       title:
+  language === 'he'
+    ? '🔔 הזמנה חדשה התקבלה!'
+    : '🔔 طلب جديد وصل!',
+
+description:
+  language === 'he'
+    ? `יש לך ${newCount} הזמנות חדשות`
+    : `لديك ${newCount} طلبات جديدة بانتظار المعالجة`,
         });
       }
       prevCountRef.current = newCount;
@@ -112,9 +149,31 @@ const language =
     setIsUpdating(orderId);
     try {
       await updateOrderStatus(orderId, status as Order['status']);
-      toast({ title: 'تم التحديث', description: 'تم تحديث حالة الطلب' });
+      toast({
+  title:
+    language === 'he'
+      ? 'עודכן'
+      : 'تم التحديث',
+
+  description:
+    language === 'he'
+      ? 'סטטוס ההזמנה עודכן'
+      : 'تم تحديث حالة الطلب',
+});
     } catch {
-      toast({ title: 'خطأ', description: 'فشل التحديث', variant: 'destructive' });
+     toast({
+  title:
+    language === 'he'
+      ? 'שגיאה'
+      : 'خطأ',
+
+  description:
+    language === 'he'
+      ? 'עדכון נכשל'
+      : 'فشل التحديث',
+
+  variant: 'destructive',
+});
     } finally {
       setIsUpdating(null);
     }
@@ -141,7 +200,7 @@ const groupedOrders = filtered.reduce((acc: any, order) => {
 
   return (
     <AdminLayout>
-      {notifPermission === 'default' && (
+      {/* {notifPermission === 'default' && (
         <div className="mb-6 flex items-center justify-between gap-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4">
           <div className="flex items-center gap-3">
             <span className="text-2xl">🔔</span>
@@ -157,8 +216,8 @@ const groupedOrders = filtered.reduce((acc: any, order) => {
             تفعيل الآن
           </button>
         </div>
-      )}
-      {notifPermission === 'granted' && (
+      )} */}
+      {notifPermission !== 'denied' && (
         <div className="mb-6 flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl px-4 py-3">
           <span className="text-lg">✅</span>
           <p className="text-sm text-emerald-400 font-medium">الإشعارات مفعّلة — ستتلقى تنبيهاً عند كل طلب جديد</p>
@@ -312,7 +371,10 @@ const groupedOrders = filtered.reduce((acc: any, order) => {
                   <div className="mt-3 flex flex-wrap gap-4 text-sm">
                     <div className="flex items-center gap-1.5 font-medium">
                       <span className="text-muted-foreground">👤</span>
-                      {order.customerName || 'غير محدد'}
+                      {order.customerName ||
+  (language === 'he'
+    ? 'לא מוגדר'
+    : 'غير محدد')}
                     </div>
                     <div className="flex items-center gap-1.5 text-muted-foreground" dir="ltr">
                       <Phone className="w-3.5 h-3.5" />
@@ -328,7 +390,11 @@ const groupedOrders = filtered.reduce((acc: any, order) => {
                     </div>
                     <div className="flex items-center gap-1.5">
                       <CreditCard className="w-3.5 h-3.5 text-muted-foreground" />
-                      <span className="text-muted-foreground">{PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod}</span>
+                      <span className="text-muted-foreground">PAYMENT_LABELS[
+  language === 'he'
+    ? 'he'
+    : 'ar'
+][order.paymentMethod]</span>
                     </div>
                     <div className="font-bold text-primary text-base mr-auto">{formatPrice(order.total)}</div>
                   </div>

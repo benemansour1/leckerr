@@ -19,6 +19,60 @@ export default function AdminDashboard() {
   });
   const { t } = useLang();
 
+  useEffect(() => {
+
+  const setupNotifications = async () => {
+
+    try {
+if (Notification.permission === 'default') {
+  await Notification.requestPermission();
+}
+
+      if (Notification.permission !== 'granted') return;
+
+      const messaging = getMessaging();
+
+      const token = await getToken(
+        messaging,
+        {
+          vapidKey:
+            'BPNI8-U9eQCXSgH6TDLqfmGXvPc2ctLJYkem7Z3tUvfx_6oBystcKIUAZykJoSiSc1yxjOdsEOkwYTCuH5hYyr4',
+        }
+      );
+
+      if (!token) return;
+
+      const deviceId =
+        localStorage.getItem('device-id') ||
+        crypto.randomUUID();
+
+      localStorage.setItem(
+        'device-id',
+        deviceId
+      );
+
+      await setDoc(
+        doc(
+          db,
+          'adminTokens',
+          deviceId
+        ),
+        {
+          token,
+          updatedAt: new Date(),
+          merge: true
+        }
+      );
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  setupNotifications();
+
+}, []);
+
 
   const STAT_CARDS = [
     { title: t.admin.todayRevenue, value: formatPrice(stats?.todayRevenue || 0), icon: DollarSign, color: 'text-primary', bg: 'bg-primary/10' },
