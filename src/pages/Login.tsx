@@ -257,6 +257,15 @@ export default function Login() {
       await confirmationResult
         .confirm(otp);
 
+        if (
+  Notification.permission ===
+  'default'
+) {
+
+  await Notification
+    .requestPermission();
+}
+
         try {
 
   const messaging =
