@@ -42,13 +42,18 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     }
   }, [user, isLoading, isAdmin]);
 
-  if (isLoading || !user || !isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
+ if (isLoading) {
+  return (
+    <div className="min-h-screen flex items-center justify-center text-white">
+      Loading...
+    </div>
+  );
+}
+
+if (!user || !isAdmin) {
+  setLocation("/admin/login");
+  return null;
+}
 
   const navItems = [
     { name: t.admin.dashboard, href: "/admin/dashboard", icon: LayoutDashboard },
