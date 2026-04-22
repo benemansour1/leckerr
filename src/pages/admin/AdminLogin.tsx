@@ -22,7 +22,11 @@ export default function AdminLogin() {
     if (password === "admin123") {
 
       // 🔥 أهم سطر (حل المشكلة)
-      login({ role: 'admin' });
+login({
+  id: 'admin',
+  role: 'admin',
+  phone: 'admin',
+} as any);
 
       toast({ title: "تم الدخول", description: "مرحباً بك في لوحة التحكم" });
 

@@ -9,13 +9,39 @@ import { Package, Phone, MapPin, CreditCard, Clock, Truck, Store } from 'lucide-
 import { cn } from '@/lib/utils';
 import { getAllOrders, updateOrderStatus, subscribeToOrders, type Order } from '@/lib/firestore';
 import { registerAdminNotifications } from "@/lib/admin-notifications";
+import { useLang } from '@/i18n';
 
 const STATUS_OPTIONS = [
-  { value: 'new', label: 'جديد', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-  { value: 'preparing', label: 'قيد التجهيز', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
-  { value: 'ready', label: 'جاهز للاستلام', color: 'bg-primary/20 text-primary border-primary/30' },
-  { value: 'delivered', label: 'تم التسليم', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
-  { value: 'cancelled', label: 'ملغي', color: 'bg-destructive/20 text-destructive border-destructive/30' },
+  {
+    value: 'new',
+    labelAr: 'جديد',
+    labelHe: 'חדש',
+    color: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  },
+  {
+    value: 'preparing',
+    labelAr: 'قيد التجهيز',
+    labelHe: 'בהכנה',
+    color: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  },
+  {
+    value: 'ready',
+    labelAr: 'جاهز للاستلام',
+    labelHe: 'מוכן',
+    color: 'bg-primary/20 text-primary border-primary/30',
+  },
+  {
+    value: 'delivered',
+    labelAr: 'تم التسليم',
+    labelHe: 'נמסר',
+    color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  },
+  {
+    value: 'cancelled',
+    labelAr: 'ملغي',
+    labelHe: 'בוטל',
+    color: 'bg-destructive/20 text-destructive border-destructive/30',
+  },
 ];
 
 const PAYMENT_LABELS: Record<string, string> = {
@@ -32,23 +58,19 @@ function playOrderSound() {
   } catch {}
 }
 
-function showBrowserNotification(count: number) {
-  try {
-    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-    new Notification('🔔 طلب جديد في ليكير!', {
-      body: `وصل ${count} طلب${count > 1 ? 'ات' : ''} جديد — افتح لوحة الطلبات`,
-      icon: '/images/lecker-logo.png',
-      tag: 'new-order',
-    });
-  } catch {}
-}
+
 
 export default function AdminOrders() {
+  
   const [orders, setOrders] = useState<Order[]>([]);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const prevCountRef = useRef<number | null>(null);
   const soundEnabledRef = useRef(false);
+  const { t } = useLang();
+
+const language =
+  localStorage.getItem('language') || 'ar';
   const [notifPermission, setNotifPermission] = useState<NotificationPermission | 'unsupported'>(
     typeof Notification === 'undefined' ? 'unsupported' : Notification.permission
   );
@@ -69,7 +91,6 @@ export default function AdminOrders() {
       const newCount = newOrders.filter(o => o.status === 'new').length;
       if (prevCountRef.current !== null && newCount > prevCountRef.current) {
         if (soundEnabledRef.current) playOrderSound();
-        showBrowserNotification(newCount);
         toast({
           title: '🔔 طلب جديد وصل!',
           description: `لديك ${newCount} طلبات جديدة بانتظار المعالجة`,
@@ -147,18 +168,27 @@ const groupedOrders = filtered.reduce((acc: any, order) => {
  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
   <div>
     <h1 className="text-3xl font-bold text-gold-gradient">
-      إدارة الطلبات
+     {language === 'he' ? 'ניהול הזמנות' : 'إدارة الطلبات'}
     </h1>
 
     {newCount > 0 && (
       <p className="text-amber-400 font-medium mt-1 animate-pulse">
-        🔔 {newCount} طلب جديد بانتظار المعالجة
+        🔔 {newCount}{language === 'he'
+  ? 'הזמנה חדשה ממתינה לטיפול'
+  : 'طلب جديد بانتظار المعالجة'}
       </p>
     )}
   </div>
 
   <div className="flex gap-2 flex-wrap">
-    {[{ value: 'all', label: 'الكل' }, ...STATUS_OPTIONS].map(
+    {[
+  {
+    value: 'all',
+    labelAr: 'الكل',
+    labelHe: 'הכל',
+  },
+  ...STATUS_OPTIONS
+].map(
       (opt) => (
         <button
           key={opt.value}
@@ -170,7 +200,7 @@ const groupedOrders = filtered.reduce((acc: any, order) => {
               : 'bg-secondary/50 text-muted-foreground border-border hover:border-primary/50'
           )}
         >
-          {opt.label}
+         {language === 'he' ? opt.labelHe : opt.labelAr}
         </button>
       )
     )}
@@ -182,7 +212,7 @@ const groupedOrders = filtered.reduce((acc: any, order) => {
     <Package className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
 
     <p className="text-muted-foreground">
-      لا توجد طلبات
+     {language === 'he' ? 'אין הזמנות' : 'لا توجد طلبات'}
     </p>
   </Card>
 ) : (
@@ -233,12 +263,14 @@ const groupedOrders = filtered.reduce((acc: any, order) => {
                           statusObj?.color
                         )}
                       >
-                        {statusObj?.label}
+                        {language === 'he'
+  ? statusObj?.labelHe
+  : statusObj?.labelAr}
                       </span>
 
                       {order.status === 'new' && (
                         <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full animate-pulse font-medium">
-                          جديد!
+                         {language === 'he' ? 'חדש!' : 'جديد!'}
                         </span>
                       )}
                     </div>
@@ -269,7 +301,9 @@ const groupedOrders = filtered.reduce((acc: any, order) => {
                           key={opt.value}
                           value={opt.value}
                         >
-                          {opt.label}
+                          {language === 'he'
+  ? opt.labelHe
+  : opt.labelAr}
                         </option>
                       ))}
                     </select>
@@ -287,7 +321,9 @@ const groupedOrders = filtered.reduce((acc: any, order) => {
                     <div className="flex items-center gap-1.5 text-muted-foreground">
                       {isDelivery ? <Truck className="w-3.5 h-3.5 text-blue-400" /> : <Store className="w-3.5 h-3.5 text-emerald-400" />}
                       <span className={isDelivery ? 'text-blue-400' : 'text-emerald-400'}>
-                        {isDelivery ? 'توصيل' : 'استلام شخصي'}
+                        {isDelivery
+  ? (language === 'he' ? 'משלוח' : 'توصيل')
+  : (language === 'he' ? 'איסוף עצמי' : 'استلام شخصي')}
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5">
@@ -300,7 +336,9 @@ const groupedOrders = filtered.reduce((acc: any, order) => {
 
                 <div className="border-t border-border/50 bg-secondary/20 p-4 sm:p-5 space-y-4">
                   <div>
-                    <h3 className="font-bold mb-3 text-sm text-muted-foreground">🛍 المنتجات المطلوبة</h3>
+                    <h3 className="font-bold mb-3 text-sm text-muted-foreground">{language === 'he'
+  ? '🛍 מוצרים שהוזמנו'
+  : '🛍 المنتجات المطلوبة'}</h3>
                     <div className="space-y-2">
                       {items.map((item: any, idx: number) => (
                         <div key={idx} className="flex items-center justify-between bg-card/50 rounded-xl px-4 py-3">
@@ -316,13 +354,13 @@ const groupedOrders = filtered.reduce((acc: any, order) => {
                       {isDelivery && (
                         <div className="flex items-center justify-between bg-blue-500/10 rounded-xl px-4 py-3">
                           <span className="text-blue-400 text-sm flex items-center gap-2">
-                            <Truck className="w-4 h-4" /> رسوم التوصيل
+                            <Truck className="w-4 h-4" />{language === 'he' ? 'דמי משלוח' : 'رسوم التوصيل'}
                           </span>
                           <span className="text-blue-400 font-bold">₪15</span>
                         </div>
                       )}
                       <div className="flex justify-between border-t border-border/50 pt-3 font-bold text-lg">
-                        <span>الإجمالي</span>
+                        <span>{language === 'he' ? 'סה״כ' : 'الإجمالي'}</span>
                         <span className="text-primary">{formatPrice(order.total)}</span>
                       </div>
                     </div>
@@ -332,7 +370,7 @@ const groupedOrders = filtered.reduce((acc: any, order) => {
                     <div className="flex items-start gap-2 bg-card/50 rounded-xl p-4">
                       <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">عنوان التوصيل</p>
+                        <p className="text-xs text-muted-foreground mb-1">{language === 'he' ? 'כתובת משלוח' : 'عنوان التوصيل'}</p>
                         <p className="font-medium">{order.deliveryAddress}</p>
                       </div>
                     </div>
@@ -344,7 +382,7 @@ const groupedOrders = filtered.reduce((acc: any, order) => {
 
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">
-                          ملاحظات العميل
+                         {language === 'he' ? 'הערות לקוח' : 'ملاحظات العميل'}
                         </p>
 
                         <p className="font-medium text-foreground">

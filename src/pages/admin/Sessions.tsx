@@ -29,14 +29,50 @@ function getSessionStatus(lastActiveAt: string): 'online' | 'idle' | 'offline' {
   return 'offline';
 }
 
-function timeAgo(dateStr: string): string {
-  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+function timeAgo(
+  dateStr: string,
+  language: string
+): string {
+
+  const diff = Math.floor(
+    (Date.now() - new Date(dateStr).getTime()) / 1000
+  );
+
+  if (language === 'he') {
+
+    if (diff < 10) return 'עכשיו';
+
+    if (diff < 60)
+      return `לפני ${diff} שניות`;
+
+    const mins = Math.floor(diff / 60);
+
+    if (mins < 60)
+      return `לפני ${mins} דקות`;
+
+    const hours = Math.floor(mins / 60);
+
+    if (hours < 24)
+      return `לפני ${hours} שעות`;
+
+    return `לפני ${Math.floor(hours / 24)} ימים`;
+  }
+
   if (diff < 10) return 'الآن';
-  if (diff < 60) return `منذ ${diff} ثانية`;
+
+  if (diff < 60)
+    return `منذ ${diff} ثانية`;
+
   const mins = Math.floor(diff / 60);
-  if (mins < 60) return `منذ ${mins} دقيقة`;
+
+  if (mins < 60)
+    return `منذ ${mins} دقيقة`;
+
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `منذ ${hours} ساعة`;
+
+  if (hours < 24)
+    return `منذ ${hours} ساعة`;
+
   return `منذ ${Math.floor(hours / 24)} يوم`;
 }
 
@@ -74,6 +110,8 @@ function detectOS(): string {
 
 export default function AdminSessions() {
   const { t } = useLang();
+  const language =
+  localStorage.getItem('language') || 'ar';
   const { user } = useAuth();
   const [sessions, setSessions] = useState<AdminSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -189,7 +227,9 @@ export default function AdminSessions() {
 
       <div className="flex items-center gap-2 mb-6 text-sm text-muted-foreground">
         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block" />
-        تحديث فوري عبر Firestore
+       {language === 'he'
+  ? 'עדכון חי דרך Firestore'
+  : 'تحديث فوري عبر Firestore'}
       </div>
 
       {loading ? (
@@ -261,7 +301,10 @@ export default function AdminSessions() {
 
                     <div>
                       <p className="text-muted-foreground text-xs mb-1">{t.admin.sessions_lastActive}</p>
-                      <p className="font-semibold">{timeAgo(session.lastActiveAt)}</p>
+                      <p className="font-semibold">{timeAgo(
+  session.lastActiveAt,
+  language
+)}</p>
                     </div>
                   </div>
 
