@@ -11,7 +11,20 @@ import {
   ConfirmationResult,
 } from 'firebase/auth';
 
-import { auth } from '@/lib/firebase';
+import {
+  auth,
+  db,
+} from '@/lib/firebase';
+
+import {
+  doc,
+  setDoc,
+} from 'firebase/firestore';
+
+import {
+  getMessaging,
+  getToken,
+} from 'firebase/messaging';
 
 export default function Login() {
 
@@ -243,6 +256,47 @@ export default function Login() {
 
       await confirmationResult
         .confirm(otp);
+
+        try {
+
+  const messaging =
+    getMessaging();
+
+  const token =
+    await getToken(
+      messaging,
+      {
+        vapidKey:
+          'BPNI8-U9eQCXSgH6TDLqfmGXvPc2ctLJYkem7Z3tUvfx_6oBystcKIUAZykJoSiSc1yxjOdsEOkwYTCuH5hYyr4',
+      }
+    );
+
+  if (token) {
+
+    await setDoc(
+      doc(
+        db,
+        'customerTokens',
+        phone
+      ),
+      {
+        token,
+        phone,
+        updatedAt:
+          new Date(),
+      },
+      {
+        merge: true,
+      }
+    );
+  }
+
+} catch (err) {
+
+  console.log(err);
+}
+
+        
 
       const adminNumbers = [
         '05XXXXXXXX',

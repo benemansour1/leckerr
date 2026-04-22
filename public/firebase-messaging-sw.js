@@ -1,5 +1,10 @@
-importScripts("https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js");
-importScripts("https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js");
+importScripts(
+  "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"
+);
+
+importScripts(
+  "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"
+);
 
 firebase.initializeApp({
   apiKey: "AIzaSyAUgsWBuHxqq4GUOZjLPaqjGXLI4rrn0fQ",
@@ -10,17 +15,17 @@ firebase.initializeApp({
   appId: "1:967568033913:web:25598e28e276412478aca8",
 });
 
-const messaging = firebase.messaging();
+const messaging =
+  firebase.messaging();
 
-// 🔥 أهم جزء
-messaging.onBackgroundMessage(function (payload) {
-  console.log("📩 background:", payload);
+messaging.onBackgroundMessage(
+  function (payload) {
 
-  self.registration.showNotification(
-    payload.notification.title,
-    {
-      body: payload.notification.body,
-      icon: "/favicon.svg",
-    }
-  );
-});
+    console.log(
+      "📩 background:",
+      payload
+    );
+
+    // ❌ لا تعرض إشعار هنا
+  }
+);
