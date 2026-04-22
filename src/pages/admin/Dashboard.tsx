@@ -49,6 +49,11 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
+<h1 className="text-white text-4xl z-[9999] relative">
+  ADMIN WORKING
+</h1>
+
+
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gold-gradient">{t.admin.overview}</h1>
