@@ -8,6 +8,7 @@ import { toast } from '@/hooks/use-toast';
 import { Package, Phone, MapPin, CreditCard, Clock, Truck, Store } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getAllOrders, updateOrderStatus, subscribeToOrders, type Order } from '@/lib/firestore';
+import { registerAdminNotifications } from "@/lib/admin-notifications";
 
 const STATUS_OPTIONS = [
   { value: 'new', label: 'جديد', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
@@ -25,20 +26,9 @@ const PAYMENT_LABELS: Record<string, string> = {
 
 function playOrderSound() {
   try {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const times = [0, 0.2, 0.4];
-    times.forEach((t) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.frequency.value = 880;
-      osc.type = 'sine';
-      gain.gain.setValueAtTime(0.5, ctx.currentTime + t);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.15);
-      osc.start(ctx.currentTime + t);
-      osc.stop(ctx.currentTime + t + 0.15);
-    });
+    const audio = new Audio("/notification.mp3");
+    audio.volume = 1;
+    audio.play().catch(() => {});
   } catch {}
 }
 
@@ -49,7 +39,6 @@ function showBrowserNotification(count: number) {
       body: `وصل ${count} طلب${count > 1 ? 'ات' : ''} جديد — افتح لوحة الطلبات`,
       icon: '/images/lecker-logo.png',
       tag: 'new-order',
-      renotify: true,
     });
   } catch {}
 }
@@ -63,6 +52,10 @@ export default function AdminOrders() {
   const [notifPermission, setNotifPermission] = useState<NotificationPermission | 'unsupported'>(
     typeof Notification === 'undefined' ? 'unsupported' : Notification.permission
   );
+
+  useEffect(() => {
+  registerAdminNotifications();
+}, []);
 
   useEffect(() => {
     const enable = () => { soundEnabledRef.current = true; };
@@ -109,6 +102,22 @@ export default function AdminOrders() {
   const filtered = orders.filter(o => statusFilter === 'all' ? true : o.status === statusFilter);
   const newCount = orders.filter(o => o.status === 'new').length;
 
+const groupedOrders = filtered.reduce((acc: any, order) => {
+  const date = new Date(order.createdAt);
+
+  const key = format(date, 'yyyy/MM/dd', {
+    locale: arSA,
+  });
+
+  if (!acc[key]) {
+    acc[key] = [];
+  }
+
+  acc[key].push(order);
+
+  return acc;
+}, {});
+
   return (
     <AdminLayout>
       {notifPermission === 'default' && (
@@ -135,73 +144,133 @@ export default function AdminOrders() {
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gold-gradient">إدارة الطلبات</h1>
-          {newCount > 0 && (
-            <p className="text-amber-400 font-medium mt-1 animate-pulse">
-              🔔 {newCount} طلب جديد بانتظار المعالجة
-            </p>
-          )}
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          {[{ value: 'all', label: 'الكل' }, ...STATUS_OPTIONS].map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => setStatusFilter(opt.value)}
-              className={cn(
-                'px-3 py-1.5 rounded-full text-xs font-bold border transition-all',
-                statusFilter === opt.value
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-secondary/50 text-muted-foreground border-border hover:border-primary/50'
-              )}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
+ <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+  <div>
+    <h1 className="text-3xl font-bold text-gold-gradient">
+      إدارة الطلبات
+    </h1>
 
-      {filtered.length === 0 ? (
-        <Card className="p-12 text-center">
-          <Package className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
-          <p className="text-muted-foreground">لا توجد طلبات</p>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {filtered.map(order => {
-            const statusObj = STATUS_OPTIONS.find(s => s.value === order.status);
+    {newCount > 0 && (
+      <p className="text-amber-400 font-medium mt-1 animate-pulse">
+        🔔 {newCount} طلب جديد بانتظار المعالجة
+      </p>
+    )}
+  </div>
+
+  <div className="flex gap-2 flex-wrap">
+    {[{ value: 'all', label: 'الكل' }, ...STATUS_OPTIONS].map(
+      (opt) => (
+        <button
+          key={opt.value}
+          onClick={() => setStatusFilter(opt.value)}
+          className={cn(
+            'px-3 py-1.5 rounded-full text-xs font-bold border transition-all',
+            statusFilter === opt.value
+              ? 'bg-primary text-primary-foreground border-primary'
+              : 'bg-secondary/50 text-muted-foreground border-border hover:border-primary/50'
+          )}
+        >
+          {opt.label}
+        </button>
+      )
+    )}
+  </div>
+</div>
+
+{filtered.length === 0 ? (
+  <Card className="p-12 text-center">
+    <Package className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
+
+    <p className="text-muted-foreground">
+      لا توجد طلبات
+    </p>
+  </Card>
+) : (
+  <div className="space-y-8">
+
+    {Object.entries(groupedOrders).map(
+      ([date, dayOrders]: any) => (
+        <div key={date} className="space-y-4">
+
+          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border border-border rounded-2xl px-5 py-4 shadow-lg">
+            <h2 className="text-xl font-bold text-primary flex items-center gap-2">
+              📅 {date}
+            </h2>
+          </div>
+
+          {dayOrders.map((order: any) => {
+
+            const statusObj = STATUS_OPTIONS.find(
+              (s) => s.value === order.status
+            );
+
             const items = order.items || [];
-            const isDelivery = order.deliveryType === 'delivery';
+
+            const isDelivery =
+              order.deliveryType === 'delivery';
 
             return (
-              <Card key={order.id} className={cn(
-                'overflow-hidden border transition-all',
-                order.status === 'new' ? 'border-amber-500/40 shadow-amber-500/10 shadow-lg' : 'border-border/50'
-              )}>
+              <Card
+                key={order.id}
+                className={cn(
+                  'overflow-hidden border transition-all',
+                  order.status === 'new'
+                    ? 'border-amber-500/40 shadow-amber-500/10 shadow-lg'
+                    : 'border-border/50'
+                )}
+              >
                 <div className="p-4 sm:p-5">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+
                     <div className="flex items-center gap-3 flex-1">
-                      <div className="text-lg font-bold text-primary">#{order.id.slice(-6)}</div>
-                      <span className={cn('px-3 py-1 rounded-full text-xs font-bold border', statusObj?.color)}>
+                      <div className="text-lg font-bold text-primary">
+                        #{order.id.slice(-6)}
+                      </div>
+
+                      <span
+                        className={cn(
+                          'px-3 py-1 rounded-full text-xs font-bold border',
+                          statusObj?.color
+                        )}
+                      >
                         {statusObj?.label}
                       </span>
+
                       {order.status === 'new' && (
-                        <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full animate-pulse font-medium">جديد!</span>
+                        <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full animate-pulse font-medium">
+                          جديد!
+                        </span>
                       )}
                     </div>
+
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Clock className="w-3.5 h-3.5" />
-                      {format(new Date(order.createdAt), 'dd/MM/yyyy - HH:mm', { locale: arSA })}
+
+                      {format(
+                        new Date(order.createdAt),
+                        'dd/MM/yyyy - HH:mm',
+                        { locale: arSA }
+                      )}
                     </div>
+
                     <select
                       className="bg-input border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary min-w-36"
                       value={order.status}
-                      onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                      onChange={(e) =>
+                        handleStatusChange(
+                          order.id,
+                          e.target.value
+                        )
+                      }
                       disabled={isUpdating === order.id}
                     >
-                      {STATUS_OPTIONS.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      {STATUS_OPTIONS.map((opt) => (
+                        <option
+                          key={opt.value}
+                          value={opt.value}
+                        >
+                          {opt.label}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -269,12 +338,18 @@ export default function AdminOrders() {
                     </div>
                   )}
 
-                  {order.notes && (
+                          {order.notes && (
                     <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl p-4">
                       <span className="text-lg">📝</span>
+
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">ملاحظات العميل</p>
-                        <p className="font-medium text-foreground">{order.notes}</p>
+                        <p className="text-xs text-muted-foreground mb-1">
+                          ملاحظات العميل
+                        </p>
+
+                        <p className="font-medium text-foreground">
+                          {order.notes}
+                        </p>
                       </div>
                     </div>
                   )}
@@ -283,7 +358,10 @@ export default function AdminOrders() {
             );
           })}
         </div>
-      )}
+      )
+    )}
+  </div>
+)}
     </AdminLayout>
   );
 }

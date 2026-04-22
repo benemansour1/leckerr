@@ -39,10 +39,10 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch">
         {STAT_CARDS.map((stat, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
-            <Card className="p-6 relative overflow-hidden group">
+           <Card className="p-6 h-full relative overflow-hidden group">
               <div className={`absolute -end-4 -top-4 w-24 h-24 rounded-full ${stat.bg} blur-2xl group-hover:bg-opacity-20 transition-all`} />
               <div className="relative z-10 flex items-start justify-between">
                 <div>
@@ -63,7 +63,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="mt-12 grid lg:grid-cols-2 gap-8">
-        <Card className="p-6">
+        <Card className="p-6 h-full">
           <h2 className="text-xl font-bold border-b border-border/50 pb-4 mb-4">{t.admin.additionalStats}</h2>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
