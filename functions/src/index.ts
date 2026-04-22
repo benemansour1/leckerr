@@ -1,42 +1,78 @@
 import * as admin from "firebase-admin";
-import {onDocumentCreated} from "firebase-functions/v2/firestore";
+import {
+  onDocumentCreated,
+} from "firebase-functions/v2/firestore";
 
 admin.initializeApp();
 
-export const sendNewOrderNotification = onDocumentCreated(
+export const
+sendNewOrderNotification =
+onDocumentCreated(
+
   "orders/{orderId}",
+
   async (event) => {
-    const order = event.data?.data();
 
-    const tokensSnapshot = await admin
-      .firestore()
-      .collection("adminTokens")
-      .get();
+    const order =
+      event.data?.data();
 
-    const tokens = tokensSnapshot.docs
-  .map((doc) => doc.data().token)
-  .filter(Boolean);
+    const tokensSnapshot =
+      await admin
+        .firestore()
+        .collection(
+          "adminTokens"
+        )
+        .get();
+
+    const tokens =
+      tokensSnapshot.docs
+        .map((doc) =>
+          doc.data().token
+        )
+        .filter(Boolean);
 
     if (!tokens.length) {
-      console.log("No admin tokens found");
+
+      console.log(
+        "No admin tokens found"
+      );
+
       return;
     }
 
-    await admin.messaging().sendEachForMulticast({
-      tokens,
+    await admin
+      .messaging()
+      .sendEachForMulticast({
 
-      notification: {
-        title: "🔔 طلب جديد",
-        body: `طلب جديد باسم ${order?.customerName || "زبون"}`,
-      },
+        tokens,
 
-      webpush: {
-        notification: {
-          icon: "/favicon.svg",
+        data: {
+
+          title:
+            "🔔 طلب جديد",
+
+          body:
+            `طلب جديد باسم ${
+              order?.customerName ||
+              "زبون"
+            }`,
         },
-      },
-    });
 
-    console.log("✅ Notification sent");
+        webpush: {
+
+          notification: {
+
+            icon:
+              "/favicon.svg",
+
+            badge:
+              "/favicon.svg",
+          },
+        },
+      });
+
+    console.log(
+      "✅ Notification sent"
+    );
   }
 );

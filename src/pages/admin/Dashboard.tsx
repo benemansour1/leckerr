@@ -21,6 +21,12 @@ export default function AdminDashboard() {
 
   useEffect(() => {
 
+  window.scrollTo(0, 0);
+
+}, []);
+
+  useEffect(() => {
+
   const setupNotifications = async () => {
 
     try {

@@ -109,54 +109,49 @@ const language =
   registerAdminNotifications();
 }, []);
 
+
 useEffect(() => {
 
-  const unlockAudio = () => {
+  window.scrollTo(0, 0);
 
-    const audio = new Audio(
-      '/notification.mp3'
-    );
+}, []);
 
-    audio.volume = 0;
+useEffect(() => {
 
-    audio.play()
-      .then(() => {
+const unlockAudio = () => {
 
-        audio.pause();
+  orderAudio.volume = 0;
 
-        audio.currentTime = 0;
+  orderAudio.play()
+    .then(() => {
 
-        soundEnabledRef.current = true;
+      orderAudio.pause();
 
-        console.log('audio unlocked');
+      orderAudio.currentTime = 0;
 
-      })
-      .catch((err) => {
+      orderAudio.volume = 1;
 
-        console.log(
-          'unlock failed',
-          err
-        );
-      });
+      soundEnabledRef.current =
+        true;
 
-    window.removeEventListener(
-      'click',
-      unlockAudio
-    );
-  };
+      console.log(
+        'audio unlocked'
+      );
 
-  window.addEventListener(
+    })
+    .catch((err) => {
+
+      console.log(
+        'unlock failed',
+        err
+      );
+    });
+
+  window.removeEventListener(
     'click',
     unlockAudio
   );
-
-  return () => {
-
-    window.removeEventListener(
-      'click',
-      unlockAudio
-    );
-  };
+};
 
 }, []);
 

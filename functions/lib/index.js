@@ -51,15 +51,19 @@ exports.sendNewOrderNotification = (0, firestore_1.onDocumentCreated)("orders/{o
         console.log("No admin tokens found");
         return;
     }
-    await admin.messaging().sendEachForMulticast({
+    await admin
+        .messaging()
+        .sendEachForMulticast({
         tokens,
-        notification: {
+        data: {
             title: "🔔 طلب جديد",
-            body: `طلب جديد باسم ${(order === null || order === void 0 ? void 0 : order.customerName) || "زبون"}`,
+            body: `طلب جديد باسم ${(order === null || order === void 0 ? void 0 : order.customerName) ||
+                "زبون"}`,
         },
         webpush: {
             notification: {
                 icon: "/favicon.svg",
+                badge: "/favicon.svg",
             },
         },
     });

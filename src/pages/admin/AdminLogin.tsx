@@ -24,6 +24,8 @@ export default function AdminLogin() {
 
     e.preventDefault();
 
+    if (loading) return;
+
     setLoading(true);
 
     try {
@@ -39,7 +41,7 @@ export default function AdminLogin() {
         password === adminPassword
       ) {
 
-        login({
+       await login({
           id: 'admin',
           role: 'admin',
           phone: 'admin',
@@ -61,9 +63,8 @@ export default function AdminLogin() {
   await Notification.requestPermission();
 }
 
-        setLocation(
-          '/admin/dashboard'
-        );
+window.location.href =
+  '/admin/dashboard';
 
       } else {
 
