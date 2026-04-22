@@ -160,15 +160,9 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-          <motion.div
-            key={location}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            {children}
-          </motion.div>
-        </div>
+      <div>
+  {children}
+</div>
       </main>
     </div>
   );
