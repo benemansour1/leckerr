@@ -174,6 +174,29 @@ export default function AdminSettings() {
 
     try {
 
+
+      const currentPassword =
+  (settings as any)?.adminPassword ||
+  'admin123';
+
+if (
+  oldPassword !==
+  currentPassword
+) {
+
+  toast({
+    title:
+      language === 'he'
+        ? 'סיסמה נוכחית שגויה'
+        : 'كلمة المرور الحالية غير صحيحة',
+
+    variant:
+      'destructive',
+  });
+
+  return;
+}
+
       await updateMutation.mutateAsync({
         adminPassword:
           newPassword,

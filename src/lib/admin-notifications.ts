@@ -1,3 +1,3 @@
 export async function registerAdminNotifications() {
-  return;
+  return true;
 }
