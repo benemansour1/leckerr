@@ -108,11 +108,56 @@ const language =
   registerAdminNotifications();
 }, []);
 
-  useEffect(() => {
-    const enable = () => { soundEnabledRef.current = true; };
-    window.addEventListener('click', enable, { once: true });
-    return () => window.removeEventListener('click', enable);
-  }, []);
+useEffect(() => {
+
+  const unlockAudio = () => {
+
+    const audio = new Audio(
+      '/notification.mp3'
+    );
+
+    audio.volume = 0;
+
+    audio.play()
+      .then(() => {
+
+        audio.pause();
+
+        audio.currentTime = 0;
+
+        soundEnabledRef.current = true;
+
+        console.log('audio unlocked');
+
+      })
+      .catch((err) => {
+
+        console.log(
+          'unlock failed',
+          err
+        );
+      });
+
+    window.removeEventListener(
+      'click',
+      unlockAudio
+    );
+  };
+
+  window.addEventListener(
+    'click',
+    unlockAudio
+  );
+
+  return () => {
+
+    window.removeEventListener(
+      'click',
+      unlockAudio
+    );
+  };
+
+}, []);
 
   // Real-time subscription to Firestore orders
   useEffect(() => {
@@ -390,11 +435,15 @@ const groupedOrders = filtered.reduce((acc: any, order) => {
                     </div>
                     <div className="flex items-center gap-1.5">
                       <CreditCard className="w-3.5 h-3.5 text-muted-foreground" />
-                      <span className="text-muted-foreground">PAYMENT_LABELS[
-  language === 'he'
-    ? 'he'
-    : 'ar'
-][order.paymentMethod]</span>
+   <span className="text-muted-foreground">
+  {
+    PAYMENT_LABELS[
+      language === 'he'
+        ? 'he'
+        : 'ar'
+    ][order.paymentMethod]
+  }
+</span>
                     </div>
                     <div className="font-bold text-primary text-base mr-auto">{formatPrice(order.total)}</div>
                   </div>
